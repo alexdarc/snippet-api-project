@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <SnippetListComponent v-bind:snippet-service="snippetService"/>
+    <AddSnippetComponent v-bind:snippet-service="snippetService"/>
   </div>
 </template>
 
@@ -10,9 +11,11 @@
   import { ISnippetsService } from '@/services/ISnippetsService';
   import SnippetsService from '@/services/SnippetsService';
   import { ApiService } from '@/services/ApiService';
+  import AddSnippetComponent from '@/components/AddSnippetComponent.vue';
 
   @Component({
     components: {
+      AddSnippetComponent,
       SnippetListComponent,
     },
   })
@@ -20,8 +23,6 @@
     snippetService: ISnippetsService = new SnippetsService(
       new ApiService('https://localhost:5001/api/v1/'),
     );
-
-    snippetFalse = 5;
   }
 </script>
 
