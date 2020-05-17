@@ -2,8 +2,11 @@
   <div>
     <dl>
       <template v-for="snippetModel in snippetModelList">
-        <dt v-bind:key="snippetModel.Description">{{snippetModel.Description}}</dt>
-        <dd v-bind:key="snippetModel.Content">{{snippetModel.Content}}</dd>
+        <dt v-bind:key="snippetModel.description">
+          {{snippetModel.description}} / {{snippetModel.id}}
+          <button v-on:click="deleteSnippet()">Delete</button>
+        </dt>
+        <dd v-bind:key="snippetModel.content">{{snippetModel.content}}</dd>
       </template>
     </dl>
   </div>
@@ -29,6 +32,9 @@
         .then((snippetModels: SnippetModel[]) => {
           this.snippetModelList = snippetModels;
         });
+    }
+
+    deleteSnippet() {
     }
   }
 </script>

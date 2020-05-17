@@ -32,7 +32,7 @@
         return;
       }
 
-      this.snippetService.addSnippet(new SnippetModel(this.content, this.description));
+      this.snippetService.addSnippet(new SnippetModel('', this.content, this.description));
       this.content = '';
       this.description = '';
     }

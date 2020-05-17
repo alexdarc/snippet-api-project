@@ -1,7 +1,8 @@
 export class SnippetModel {
   constructor(
-    public Content: string,
-    public Description: string,
+    public id: string,
+    public content: string,
+    public description: string,
   ) {
   }
 }

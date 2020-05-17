@@ -17,6 +17,7 @@ export default class SnippetsService implements ISnippetsService {
     return this.apiService.list(limit, offset)
       .then((list) => list.map(
         (x) => new SnippetModel(
+          x.id,
           x.content,
           x.description,
         ),
@@ -28,9 +29,9 @@ export default class SnippetsService implements ISnippetsService {
   }
 
   addSnippet(snippetModel: SnippetModel): Promise<SnippetModel> {
-    return this.apiService.create(new Snippet('', snippetModel.Content, snippetModel.Description))
+    return this.apiService.create(new Snippet('', snippetModel.content, snippetModel.description))
       .then((snippet) => {
-        const snippetModel = new SnippetModel(snippet.content, snippet.description);
+        const snippetModel = new SnippetModel(snippet.id, snippet.content, snippet.description);
 
         this.snippetList.push(snippetModel);
         return snippetModel;
