@@ -1,20 +1,28 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <SnippetListComponent v-bind:snippet-service="snippetService" />
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from './components/HelloWorld.vue';
+import SnippetListComponent from '@/components/SnippetListComponent.vue';
+import { ISnippetsService } from '@/services/ISnippetsService';
+import SnippetsService from '@/services/SnippetsService';
+import { ApiService } from '@/services/ApiService';
 
 @Component({
   components: {
-    HelloWorld,
+    SnippetListComponent,
   },
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+  snippetService: ISnippetsService = new SnippetsService(
+    new ApiService('https://localhost:5001/api/v1/'),
+  );
+
+  snippetFalse = 5;
+}
 </script>
 
 <style>
