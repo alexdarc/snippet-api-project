@@ -10,27 +10,27 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import { ISnippetsService } from '@/services/ISnippetsService';
-import { SnippetModel } from '@/models/SnippetModel';
+  import { Component, Prop, Vue } from 'vue-property-decorator';
+  import { ISnippetsService } from '@/services/ISnippetsService';
+  import { SnippetModel } from '@/models/SnippetModel';
 
-@Component({})
-export default class SnippetListComponent extends Vue {
-  @Prop({
-    type: Object as () => ISnippetsService,
-    required: true,
-  }) private snippetService!: ISnippetsService;
+  @Component({})
+  export default class SnippetListComponent extends Vue {
+    @Prop({
+      type: Object as () => ISnippetsService,
+      required: true,
+    }) private snippetService!: ISnippetsService;
 
-  snippetModelList: SnippetModel[] = [];
+    snippetModelList: SnippetModel[] = [];
 
-  mounted() {
-    this.snippetService
-      .getSnippets(50, 0)
-      .then((snippetModels: SnippetModel[]) => {
-        this.snippetModelList = snippetModels;
-      });
+    mounted() {
+      this.snippetService
+        .getSnippets(50, 0)
+        .then((snippetModels: SnippetModel[]) => {
+          this.snippetModelList = snippetModels;
+        });
+    }
   }
-}
 </script>
 
 <style scoped>
