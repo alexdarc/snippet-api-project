@@ -4,7 +4,11 @@
                           v-on:on-delete="deleteSnippet($event)"
                           v-on:on-edit="editSnippet($event)"/>
 
-    <EditSnippetComponent v-bind:snippet-model="currentSnippetModel" />
+    <div v-if="canEditSnippet">
+      <h2>Edit snippet:</h2>
+      <EditSnippetComponent v-bind:snippet-model="currentSnippetModel"
+                            v-on:on-save="saveSnippet($event)"/>
+    </div>
   </div>
 </template>
 
@@ -32,6 +36,8 @@
 
     currentSnippetModel: SnippetModel = new SnippetModel('', '', '');
 
+    canEditSnippet = false;
+
     mounted() {
       this.snippetService
         .getSnippets(50, 0)
@@ -47,10 +53,16 @@
     editSnippet(id: string) {
       this.snippetService.getSnippet(id)
         .then((snippetModel) => {
-          this.currentSnippetModel = snippetModel;
-        })
-        .catch(() => { debugger })
-        .finally(() => { console.log(this.currentSnippetModel) });
+          this.currentSnippetModel = new SnippetModel(snippetModel.id, snippetModel.content, snippetModel.description);
+          this.canEditSnippet = true;
+        });
+    }
+
+    saveSnippet(snippetModel: SnippetModel) {
+      this.snippetService.updateSnippet(snippetModel)
+        .then(() => {
+          this.canEditSnippet = false;
+        });
     }
   }
 </script>

@@ -58,4 +58,19 @@ export default class SnippetsService implements ISnippetsService {
 
     return Promise.resolve(snippetModel);
   }
+
+  updateSnippet(snippetModel: SnippetModel): Promise<SnippetModel> {
+    const snippetIndex = this.snippetList.findIndex(s => s.id === snippetModel.id);
+    if (snippetIndex === -1) {
+      return Promise.reject('Not found');
+    }
+
+    return this.apiService.update(new Snippet(snippetModel.id, snippetModel.content, snippetModel.description))
+      .then((snippet) => {
+        const snippetModel = new SnippetModel(snippet.id, snippet.content, snippet.description);
+        this.snippetList.splice(snippetIndex, 1, snippetModel)
+
+        return snippetModel;
+      });
+  }
 }
