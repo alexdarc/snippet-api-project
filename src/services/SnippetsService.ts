@@ -49,4 +49,13 @@ export default class SnippetsService implements ISnippetsService {
         this.snippetList.splice(snippetIndex, 1);
       });
   }
+
+  getSnippet(id: string): Promise<SnippetModel> {
+    const snippetModel = this.snippetList.find(s => s.id === id);
+    if (snippetModel == null) {
+      return Promise.reject('Not found');
+    }
+
+    return Promise.resolve(snippetModel);
+  }
 }

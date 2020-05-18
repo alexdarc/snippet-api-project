@@ -6,4 +6,6 @@ export interface ISnippetsService {
   addSnippet(snippetModel: SnippetModel): Promise<SnippetModel>;
 
   removeSnippet(id: string): void;
+
+  getSnippet(id: string): Promise<SnippetModel>;
 }

@@ -2,11 +2,12 @@
   <div>
     <dl>
       <template v-for="snippetModel in snippetModelList">
-        <dt v-bind:key="snippetModel.id + snippetModel.description">
+        <dt v-bind:key="snippetModel.id">
           {{snippetModel.description}} / {{snippetModel.id}}
+          <button v-on:click="onEdit(snippetModel.id)">Edit</button>
           <button v-on:click="onDelete(snippetModel.id)">Delete</button>
         </dt>
-        <dd v-bind:key="snippetModel.id + snippetModel.content">{{snippetModel.content}}</dd>
+        <dd v-bind:key="snippetModel.content">{{snippetModel.content}}</dd>
       </template>
     </dl>
   </div>
@@ -23,8 +24,8 @@ export default class SnippetListComponent extends Vue {
     required: true,
   }) snippetModelList!: SnippetModel[];
 
-  @Emit() onDelete(id: string) {
-  }
+  @Emit() onEdit(id: string) {}
+  @Emit() onDelete(id: string) {}
 }
 </script>
 
