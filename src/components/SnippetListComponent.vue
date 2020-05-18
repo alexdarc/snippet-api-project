@@ -2,43 +2,30 @@
   <div>
     <dl>
       <template v-for="snippetModel in snippetModelList">
-        <dt v-bind:key="snippetModel.description">
+        <dt v-bind:key="snippetModel.id + snippetModel.description">
           {{snippetModel.description}} / {{snippetModel.id}}
-          <button v-on:click="deleteSnippet(snippetModel.id)">Delete</button>
+          <button v-on:click="onDelete(snippetModel.id)">Delete</button>
         </dt>
-        <dd v-bind:key="snippetModel.content">{{snippetModel.content}}</dd>
+        <dd v-bind:key="snippetModel.id + snippetModel.content">{{snippetModel.content}}</dd>
       </template>
     </dl>
   </div>
 </template>
 
 <script lang="ts">
-  import { Component, Prop, Vue } from 'vue-property-decorator';
-  import { ISnippetsService } from '@/services/ISnippetsService';
-  import { SnippetModel } from '@/models/SnippetModel';
+import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
+import { SnippetModel } from '@/models/SnippetModel';
 
-  @Component({})
-  export default class SnippetListComponent extends Vue {
-    @Prop({
-      type: Object as () => ISnippetsService,
-      required: true,
-    }) private snippetService!: ISnippetsService;
+@Component({})
+export default class SnippetListComponent extends Vue {
+  @Prop({
+    type: Array as () => SnippetModel[],
+    required: true,
+  }) snippetModelList!: SnippetModel[];
 
-    snippetModelList: SnippetModel[] = [];
-
-    mounted() {
-      this.snippetService
-        .getSnippets(50, 0)
-        .then((snippetModels: SnippetModel[]) => {
-          this.snippetModelList = snippetModels;
-        });
-    }
-
-    deleteSnippet(id: string) {
-      this.snippetService
-        .removeSnippet(id);
-    }
+  @Emit() onDelete(id: string) {
   }
+}
 </script>
 
 <style scoped>
