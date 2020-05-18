@@ -37,4 +37,16 @@ export default class SnippetsService implements ISnippetsService {
         return snippetModel;
       });
   }
+
+  removeSnippet(id: string): void {
+    const snippetIndex = this.snippetList.findIndex(s => s.id === id);
+    if (snippetIndex === -1) {
+      return;
+    }
+
+    this.apiService.delete(id)
+      .then(() => {
+        this.snippetList.splice(snippetIndex, 1);
+      });
+  }
 }

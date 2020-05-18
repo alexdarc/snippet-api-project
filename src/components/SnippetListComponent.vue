@@ -4,7 +4,7 @@
       <template v-for="snippetModel in snippetModelList">
         <dt v-bind:key="snippetModel.description">
           {{snippetModel.description}} / {{snippetModel.id}}
-          <button v-on:click="deleteSnippet()">Delete</button>
+          <button v-on:click="deleteSnippet(snippetModel.id)">Delete</button>
         </dt>
         <dd v-bind:key="snippetModel.content">{{snippetModel.content}}</dd>
       </template>
@@ -34,7 +34,9 @@
         });
     }
 
-    deleteSnippet() {
+    deleteSnippet(id: string) {
+      this.snippetService
+        .removeSnippet(id);
     }
   }
 </script>
