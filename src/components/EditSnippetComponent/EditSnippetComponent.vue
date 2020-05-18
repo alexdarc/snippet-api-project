@@ -14,22 +14,25 @@
 
 <script lang="ts">
   import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
-  import { SnippetModel } from '@/models/SnippetModel';
+  import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
 
   @Component({})
   export default class EditSnippetComponent extends Vue {
     @Prop({
-      type: SnippetModel,
+      type: EditSnippetModel,
       required: true,
-    }) snippetModel!: SnippetModel;
-    @Emit() onSave(snippetModel: SnippetModel) {}
+    }) snippetModel!: EditSnippetModel;
+    @Emit() onSave(snippetModel: EditSnippetModel) {}
 
     submitForm() {
       if (this.snippetModel.content.length === 0 || this.snippetModel.description.length === 0) {
         return;
       }
 
-      this.onSave(new SnippetModel(this.snippetModel.id, this.snippetModel.content, this.snippetModel.description));
+      this.onSave(new EditSnippetModel(
+        this.snippetModel.id,
+        this.snippetModel.content,
+        this.snippetModel.description));
 
       this.clearForm();
     }

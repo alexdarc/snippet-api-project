@@ -3,7 +3,7 @@
     <dl>
       <template v-for="snippetModel in snippetModelList">
         <dt v-bind:key="snippetModel.id">
-          {{snippetModel.description}} / {{snippetModel.id}}
+          {{snippetModel.description}} / {{snippetModel.id}} / {{snippetModel.createDate}}
           <button v-on:click="onEdit(snippetModel.id)">Edit</button>
           <button v-on:click="onDelete(snippetModel.id)">Delete</button>
         </dt>

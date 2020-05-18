@@ -6,8 +6,14 @@
 
     <div v-if="canEditSnippet">
       <h2>Edit snippet:</h2>
-      <EditSnippetComponent v-bind:snippet-model="currentSnippetModel"
+      <EditSnippetComponent v-bind:snippet-model="currentEditableSnippetModel"
                             v-on:on-save="saveSnippet($event)"/>
+      <button v-on:click="cancelEditSnippet()">Cancel</button>
+    </div>
+    <div v-if="!canEditSnippet">
+      <h2>Add snippet:</h2>
+      <EditSnippetComponent v-bind:snippet-model="emptySnippetModel"
+                            v-on:on-save="addSnippet($event)"/>
     </div>
   </div>
 </template>
@@ -15,11 +21,15 @@
 <script lang="ts">
   import { Component, Vue } from 'vue-property-decorator';
   import SnippetListComponent from '@/components/SnippetListComponent.vue';
-  import { ISnippetsService } from '@/services/ISnippetsService';
-  import SnippetsService from '@/services/SnippetsService';
-  import { ApiService } from '@/services/ApiService';
-  import EditSnippetComponent from '@/components/EditSnippetComponent.vue';
+  import { ISnippetsService } from '@/services/SnippetsService/ISnippetsService';
+  import SnippetsService from '@/services/SnippetsService/SnippetsService';
+  import { ApiService } from '@/services/ApiService/ApiService';
+  import EditSnippetComponent from '@/components/EditSnippetComponent/EditSnippetComponent.vue';
   import { SnippetModel } from '@/models/SnippetModel';
+  import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
+  import { Utils } from '@/utils/Utils';
+  import { UpdateServiceSnippetModel } from '@/services/SnippetsService/UpdateServiceSnippetModel';
+  import { AddServiceSnippetModel } from '@/services/SnippetsService/AddServiceSnippetModel';
 
   @Component({
     components: {
@@ -34,9 +44,17 @@
 
     snippetModelList: SnippetModel[] = [];
 
-    currentSnippetModel: SnippetModel = new SnippetModel('', '', '');
+    currentEditableSnippetModel: EditSnippetModel = new EditSnippetModel(
+      Utils.emptyString,
+      Utils.emptyString,
+      Utils.emptyString);
 
     canEditSnippet = false;
+
+    emptySnippetModel: EditSnippetModel = new EditSnippetModel(
+      Utils.emptyString,
+      Utils.emptyString,
+      Utils.emptyString);
 
     mounted() {
       this.snippetService
@@ -53,13 +71,35 @@
     editSnippet(id: string) {
       this.snippetService.getSnippet(id)
         .then((snippetModel) => {
-          this.currentSnippetModel = new SnippetModel(snippetModel.id, snippetModel.content, snippetModel.description);
+          this.currentEditableSnippetModel = new EditSnippetModel(
+            snippetModel.id,
+            snippetModel.content,
+            snippetModel.description,
+          );
           this.canEditSnippet = true;
         });
     }
 
-    saveSnippet(snippetModel: SnippetModel) {
-      this.snippetService.updateSnippet(snippetModel)
+    cancelEditSnippet() {
+      this.canEditSnippet = false;
+    }
+
+    saveSnippet(snippetModel: EditSnippetModel) {
+      this.snippetService.updateSnippet(new UpdateServiceSnippetModel(
+        snippetModel.id,
+        snippetModel.content,
+        snippetModel.description,
+      ))
+        .then(() => {
+          this.canEditSnippet = false;
+        });
+    }
+
+    addSnippet(snippetModel: EditSnippetModel) {
+      this.snippetService.addSnippet(new AddServiceSnippetModel(
+        snippetModel.content,
+        snippetModel.description,
+      ))
         .then(() => {
           this.canEditSnippet = false;
         });

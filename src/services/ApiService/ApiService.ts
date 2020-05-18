@@ -1,6 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 import { IApiService } from './IApiService';
 import { Snippet } from '@/models/Snippet';
+import { UpdateApiSnippetModel } from '@/services/ApiService/UpdateApiSnippetModel';
+import { CreateApiServiceSnippetModel } from '@/services/ApiService/CreateApiServiceSnippetModel';
 
 export class ApiService implements IApiService {
   private http: AxiosInstance;
@@ -15,7 +17,7 @@ export class ApiService implements IApiService {
     });
   }
 
-  create(snippet: Snippet): Promise<Snippet> {
+  create(snippet: CreateApiServiceSnippetModel): Promise<Snippet> {
     return this.http.post('snippets', snippet)
       .then(response => response.data);
   }
@@ -35,7 +37,7 @@ export class ApiService implements IApiService {
       .then(response => response.data);
   }
 
-  update(snippet: Snippet): Promise<Snippet> {
+  update(snippet: UpdateApiSnippetModel): Promise<Snippet> {
     return this.http.put(`snippets/${snippet.id}`, snippet)
       .then(response => response.data);
   }
