@@ -3,7 +3,7 @@
     <dl>
       <template v-for="snippetModel in snippetModelList">
         <dt v-bind:key="snippetModel.id">
-          {{snippetModel.description}} / {{snippetModel.id}} / {{snippetModel.createDate}}
+          {{snippetModel.description}} / {{snippetModel.id}} / {{snippetModel.createdDate}}
           <button v-on:click="onEdit(snippetModel.id)">Edit</button>
           <button v-on:click="onDelete(snippetModel.id)">Delete</button>
         </dt>
@@ -15,14 +15,14 @@
 
 <script lang="ts">
 import { Component, Emit, Prop, Vue } from 'vue-property-decorator';
-import { SnippetModel } from '@/models/SnippetModel';
+import { SnippetListItem } from '@/components/SnippetListComponent/models/SnippetListItem';
 
 @Component({})
 export default class SnippetListComponent extends Vue {
   @Prop({
-    type: Array as () => SnippetModel[],
+    type: Array as () => SnippetListItem[],
     required: true,
-  }) snippetModelList!: SnippetModel[];
+  }) snippetModelList!: SnippetListItem[];
 
   @Emit() onEdit(id: string) {}
   @Emit() onDelete(id: string) {}

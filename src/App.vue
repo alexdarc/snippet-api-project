@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <SnippetListComponent v-bind:snippetModelList="snippetModelList"
+    <SnippetListComponent v-bind:snippetModelList="snippetItemList"
                           v-on:on-delete="deleteSnippet($event)"
                           v-on:on-edit="editSnippet($event)"/>
 
@@ -20,7 +20,7 @@
 
 <script lang="ts">
   import { Component, Vue } from 'vue-property-decorator';
-  import SnippetListComponent from '@/components/SnippetListComponent.vue';
+  import SnippetListComponent from '@/components/SnippetListComponent/SnippetListComponent.vue';
   import { ISnippetsService } from '@/services/SnippetsService/ISnippetsService';
   import SnippetsService from '@/services/SnippetsService/SnippetsService';
   import { ApiService } from '@/services/ApiService/ApiService';
@@ -30,6 +30,9 @@
   import { Utils } from '@/utils/Utils';
   import { UpdateServiceSnippetModel } from '@/services/SnippetsService/UpdateServiceSnippetModel';
   import { AddServiceSnippetModel } from '@/services/SnippetsService/AddServiceSnippetModel';
+  import { SnippetListItem } from '@/components/SnippetListComponent/models/SnippetListItem';
+  import { DateTimeFormats } from '@/utils/DateTimeFormats';
+  import moment from 'moment';
 
   @Component({
     components: {
@@ -42,7 +45,15 @@
       new ApiService('https://localhost:5001/api/v1/'),
     );
 
-    snippetModelList: SnippetModel[] = [];
+    snippetModels: SnippetModel[] = [];
+    get snippetItemList(): SnippetListItem[] {
+      return this.snippetModels.map(snippetModel => new SnippetListItem(
+        snippetModel.id,
+        snippetModel.content,
+        snippetModel.description,
+        moment(snippetModel.createDate).format(DateTimeFormats.longDate),
+      ));
+    }
 
     currentEditableSnippetModel: EditSnippetModel = new EditSnippetModel(
       Utils.emptyString,
@@ -60,7 +71,7 @@
       this.snippetService
         .getSnippets(50, 0)
         .then((snippetModels: SnippetModel[]) => {
-          this.snippetModelList = snippetModels;
+          this.snippetModels = snippetModels;
         });
     }
 
