@@ -1,10 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
-import { IApiService } from './IApiService';
-import { Snippet } from '@/models/Snippet';
-import { UpdateApiSnippetModel } from '@/services/ApiService/UpdateApiSnippetModel';
-import { CreateApiServiceSnippetModel } from '@/services/ApiService/CreateApiServiceSnippetModel';
+import { ISnippetMapper } from '@/core/dal/contracts/ISnippetMapper';
+import { CreateSnippetModel } from '@/core/dal/contracts/models/CreateSnippetModel';
+import { UpdateSnippetModel } from '@/core/dal/contracts/models/UpdateSnippetModel';
+import { SnippetModel } from '@/core/dal/contracts/models/SnippetModel';
 
-export class ApiService implements IApiService {
+export class RestApiSnippetMapper implements ISnippetMapper {
   private http: AxiosInstance;
 
   constructor(baseURL: string) {
@@ -17,7 +17,7 @@ export class ApiService implements IApiService {
     });
   }
 
-  create(snippet: CreateApiServiceSnippetModel): Promise<Snippet> {
+  create(snippet: CreateSnippetModel): Promise<SnippetModel> {
     return this.http.post('snippets', snippet)
       .then(response => response.data);
   }
@@ -27,17 +27,17 @@ export class ApiService implements IApiService {
       .then(response => response.data);
   }
 
-  get(id: string): Promise<Snippet> {
+  get(id: string): Promise<SnippetModel> {
     return this.http.get(`snippets/${id}`)
       .then(response => response.data);
   }
 
-  list(limit: number, offset: number): Promise<Snippet[]> {
+  list(limit: number, offset: number): Promise<SnippetModel[]> {
     return this.http.get('snippets')
       .then(response => response.data);
   }
 
-  update(snippet: UpdateApiSnippetModel): Promise<Snippet> {
+  update(snippet: UpdateSnippetModel): Promise<SnippetModel> {
     return this.http.put(`snippets/${snippet.id}`, snippet)
       .then(response => response.data);
   }
