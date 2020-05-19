@@ -1,20 +1,20 @@
 <template>
   <div id="app">
-<!--    <SnippetListComponent v-bind:snippetModelList="snippetItemList"-->
-<!--                          v-on:on-delete="deleteSnippet($event)"-->
-<!--                          v-on:on-edit="editSnippet($event)"/>-->
+    <!--    <SnippetListComponent v-bind:snippetModelList="snippetItemList"-->
+    <!--                          v-on:on-delete="deleteSnippet($event)"-->
+    <!--                          v-on:on-edit="editSnippet($event)"/>-->
 
-<!--    <div v-if="canEditSnippet">-->
-<!--      <h2>Edit snippet:</h2>-->
-<!--      <EditSnippetComponent v-bind:snippet-model="currentEditableSnippetModel"-->
-<!--                            v-on:on-save="saveSnippet($event)"/>-->
-<!--      <button v-on:click="cancelEditSnippet()">Cancel</button>-->
-<!--    </div>-->
-<!--    <div v-if="!canEditSnippet">-->
-<!--      <h2>Add snippet:</h2>-->
-<!--      <EditSnippetComponent v-bind:snippet-model="emptySnippetModel"-->
-<!--                            v-on:on-save="addSnippet($event)"/>-->
-<!--    </div>-->
+    <!--    <div v-if="canEditSnippet">-->
+    <!--      <h2>Edit snippet:</h2>-->
+    <!--      <EditSnippetComponent v-bind:snippet-model="currentEditableSnippetModel"-->
+    <!--                            v-on:on-save="saveSnippet($event)"/>-->
+    <!--      <button v-on:click="cancelEditSnippet()">Cancel</button>-->
+    <!--    </div>-->
+    <!--    <div v-if="!canEditSnippet">-->
+    <!--      <h2>Add snippet:</h2>-->
+    <!--      <EditSnippetComponent v-bind:snippet-model="emptySnippetModel"-->
+    <!--                            v-on:on-save="addSnippet($event)"/>-->
+    <!--    </div>-->
     <div class="container-fluid">
       <div class="row">
         <div class="col-md">
@@ -24,7 +24,24 @@
             v-on:on-edit="editSnippet($event)"/>
         </div>
         <div class="col-md">
-          One of three columns
+          <div class="editor-window sticky-top h-100">
+            <div v-if="canEditSnippet"
+                 class="d-flex flex-column h-100">
+              <h2>Edit snippet:</h2>
+              <EditSnippetComponent
+                v-bind:snippet-model="currentEditableSnippetModel"
+                v-on:on-save="saveSnippet($event)"
+                v-bind:show-cancel="true"
+                v-on:on-cancel="cancelEditSnippet()"/>
+            </div>
+            <div v-if="!canEditSnippet"
+                 class="d-flex flex-column h-100">
+              <h2>Add snippet:</h2>
+              <EditSnippetComponent
+                v-bind:snippet-model="emptySnippetModel"
+                v-on:on-save="addSnippet($event)"/>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -137,7 +154,7 @@
           snippetModel.description
         ));
       await this.updateSnippetItems();
-      this.canEditSnippet = false;
+      this.cancelEditSnippet();
     }
 
     async addSnippet(snippetModel: EditSnippetModel) {
@@ -147,11 +164,18 @@
           snippetModel.description
         ))
       await this.updateSnippetItems();
-
-      this.canEditSnippet = false;
+      this.cancelEditSnippet();
     }
   }
 </script>
 
 <style>
+  #app {
+    padding: 20px;
+  }
+
+  .editor-window {
+    max-height: calc(100vh - 20px);
+    min-height: 500px;
+  }
 </style>
