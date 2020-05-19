@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-  import { Component, Vue } from 'vue-property-decorator';
+  import { Component, Inject, Vue } from 'vue-property-decorator';
   import SnippetListComponent from '@/components/SnippetListComponent/SnippetListComponent.vue';
   import EditSnippetComponent from '@/components/EditSnippetComponent/EditSnippetComponent.vue';
   import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
@@ -42,12 +42,7 @@
   } from '@/core/bl/contracts/DeleteSnippetCommand';
   import { ISnippetItemQueryHandler, SnippetItemQuery } from '@/core/bl/contracts/SnippetItemQuery';
   import { SnippetItemModel } from '@/core/bl/contracts/models/SnippetItemModel';
-  import { SnippetListQueryHandler } from '@/core/bl/infrastructure/SnippetListQueryHandler';
-  import { RestApiSnippetMapper } from '@/core/dal/infrastructure/RestApiSnippetMapper';
-  import { SnippetItemQueryHandler } from '@/core/bl/infrastructure/SnippetItemQueryHandler';
-  import { CreateSnippetQueryHandler } from '@/core/bl/infrastructure/CreateSnippetQueryHandler';
-  import { UpdateSnippetQueryHandler } from '@/core/bl/infrastructure/UpdateSnippetQueryHandler';
-  import { DeleteSnippetCommandHandler } from '@/core/bl/infrastructure/DeleteSnippetCommandHandler';
+  import { ServiceProviders } from '@/ServiceProviders';
 
   @Component({
     components: {
@@ -56,25 +51,14 @@
     },
   })
   export default class App extends Vue {
-    private readonly snippetListQueryHandler: ISnippetListQueryHandler;
-    private readonly snippetItemQueryHandler: ISnippetItemQueryHandler;
-    private readonly createSnippetQueryHandler: ICreateSnippetQueryHandler;
-    private readonly updateSnippetQueryHandler: IUpdateSnippetQueryHandler;
-    private readonly deleteSnippetCommandHandler: IDeleteSnippetCommandHandler;
+    @Inject(ServiceProviders.ISnippetListQueryHandler) private readonly snippetListQueryHandler!: ISnippetListQueryHandler;
+    @Inject(ServiceProviders.ISnippetItemQueryHandler) private readonly snippetItemQueryHandler!: ISnippetItemQueryHandler;
+    @Inject(ServiceProviders.ICreateSnippetQueryHandler) private readonly createSnippetQueryHandler!: ICreateSnippetQueryHandler;
+    @Inject(ServiceProviders.IUpdateSnippetQueryHandler) private readonly updateSnippetQueryHandler!: IUpdateSnippetQueryHandler;
+    @Inject(ServiceProviders.IDeleteSnippetCommandHandler) private readonly deleteSnippetCommandHandler!: IDeleteSnippetCommandHandler;
 
     private readonly limit = 50;
     private readonly offset = 0;
-
-    constructor(
-    ) {
-      super();
-      const restApiSnippetMapper = new RestApiSnippetMapper('https://localhost:5001/api/v1/');
-      this.snippetListQueryHandler = new SnippetListQueryHandler(restApiSnippetMapper);
-      this.snippetItemQueryHandler = new SnippetItemQueryHandler(restApiSnippetMapper);
-      this.createSnippetQueryHandler = new CreateSnippetQueryHandler(restApiSnippetMapper);
-      this.updateSnippetQueryHandler = new UpdateSnippetQueryHandler(restApiSnippetMapper);
-      this.deleteSnippetCommandHandler = new DeleteSnippetCommandHandler(restApiSnippetMapper);
-    }
 
     snippetItemModels: SnippetItemModel[] = [];
 
