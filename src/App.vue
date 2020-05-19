@@ -19,20 +19,30 @@
 </template>
 
 <script lang="ts">
-  import { Component, Vue } from 'vue-property-decorator';
+  import { Component, Inject, Vue } from 'vue-property-decorator';
   import SnippetListComponent from '@/components/SnippetListComponent/SnippetListComponent.vue';
-  import { ISnippetsService } from '@/services/SnippetsService/ISnippetsService';
-  import SnippetsService from '@/services/SnippetsService/SnippetsService';
-  import { ApiService } from '@/services/ApiService/ApiService';
   import EditSnippetComponent from '@/components/EditSnippetComponent/EditSnippetComponent.vue';
-  import { SnippetModel } from '@/models/SnippetModel';
   import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
   import { Utils } from '@/utils/Utils';
-  import { UpdateServiceSnippetModel } from '@/services/SnippetsService/UpdateServiceSnippetModel';
-  import { AddServiceSnippetModel } from '@/services/SnippetsService/AddServiceSnippetModel';
   import { SnippetListItem } from '@/components/SnippetListComponent/models/SnippetListItem';
   import { DateTimeFormats } from '@/utils/DateTimeFormats';
   import moment from 'moment';
+  import { ISnippetListQueryHandler, SnippetListQuery } from '@/core/bl/contracts/SnippetListQuery';
+  import {
+    IUpdateSnippetQueryHandler,
+    UpdateSnippetQuery
+  } from '@/core/bl/contracts/UpdateSnippetQuery';
+  import {
+    CreateSnippetQuery,
+    ICreateSnippetQueryHandler
+  } from '@/core/bl/contracts/CreateSnippetQuery';
+  import {
+    DeleteSnippetCommand,
+    IDeleteSnippetCommandHandler
+  } from '@/core/bl/contracts/DeleteSnippetCommand';
+  import { ISnippetItemQueryHandler, SnippetItemQuery } from '@/core/bl/contracts/SnippetItemQuery';
+  import { SnippetItemModel } from '@/core/bl/contracts/models/SnippetItemModel';
+  import { ServiceProviders } from '@/ServiceProviders';
 
   @Component({
     components: {
@@ -41,17 +51,23 @@
     },
   })
   export default class App extends Vue {
-    snippetService: ISnippetsService = new SnippetsService(
-      new ApiService('https://localhost:5001/api/v1/'),
-    );
+    @Inject(ServiceProviders.ISnippetListQueryHandler) private readonly snippetListQueryHandler!: ISnippetListQueryHandler;
+    @Inject(ServiceProviders.ISnippetItemQueryHandler) private readonly snippetItemQueryHandler!: ISnippetItemQueryHandler;
+    @Inject(ServiceProviders.ICreateSnippetQueryHandler) private readonly createSnippetQueryHandler!: ICreateSnippetQueryHandler;
+    @Inject(ServiceProviders.IUpdateSnippetQueryHandler) private readonly updateSnippetQueryHandler!: IUpdateSnippetQueryHandler;
+    @Inject(ServiceProviders.IDeleteSnippetCommandHandler) private readonly deleteSnippetCommandHandler!: IDeleteSnippetCommandHandler;
 
-    snippetModels: SnippetModel[] = [];
+    private readonly limit = 50;
+    private readonly offset = 0;
+
+    snippetItemModels: SnippetItemModel[] = [];
+
     get snippetItemList(): SnippetListItem[] {
-      return this.snippetModels.map(snippetModel => new SnippetListItem(
-        snippetModel.id,
-        snippetModel.content,
-        snippetModel.description,
-        moment(snippetModel.createDate).format(DateTimeFormats.longDate),
+      return this.snippetItemModels.map(snippetItemModel => new SnippetListItem(
+        snippetItemModel.id,
+        snippetItemModel.content,
+        snippetItemModel.description,
+        moment(snippetItemModel.createdDate).format(DateTimeFormats.longDate),
       ));
     }
 
@@ -67,53 +83,59 @@
       Utils.emptyString,
       Utils.emptyString);
 
-    mounted() {
-      this.snippetService
-        .getSnippets(50, 0)
-        .then((snippetModels: SnippetModel[]) => {
-          this.snippetModels = snippetModels;
-        });
+    async mounted() {
+      await this.updateSnippetItems();
     }
 
-    deleteSnippet(id: string) {
-      this.snippetService.removeSnippet(id);
+    async updateSnippetItems() {
+      this.snippetItemModels = await this.snippetListQueryHandler
+        .HandleAsync(new SnippetListQuery(
+          this.limit, this.offset
+        ));
     }
 
-    editSnippet(id: string) {
-      this.snippetService.getSnippet(id)
-        .then((snippetModel) => {
-          this.currentEditableSnippetModel = new EditSnippetModel(
-            snippetModel.id,
-            snippetModel.content,
-            snippetModel.description,
-          );
-          this.canEditSnippet = true;
-        });
+    async deleteSnippet(id: string) {
+      await this.deleteSnippetCommandHandler
+        .HandleAsync(new DeleteSnippetCommand(id));
+      await this.updateSnippetItems();
+    }
+
+    async editSnippet(id: string) {
+      const snippetItemModel = await this.snippetItemQueryHandler
+        .HandleAsync(new SnippetItemQuery(id));
+
+      this.currentEditableSnippetModel = new EditSnippetModel(
+        snippetItemModel.id,
+        snippetItemModel.content,
+        snippetItemModel.description,
+      );
+      this.canEditSnippet = true;
     }
 
     cancelEditSnippet() {
       this.canEditSnippet = false;
     }
 
-    saveSnippet(snippetModel: EditSnippetModel) {
-      this.snippetService.updateSnippet(new UpdateServiceSnippetModel(
-        snippetModel.id,
-        snippetModel.content,
-        snippetModel.description,
-      ))
-        .then(() => {
-          this.canEditSnippet = false;
-        });
+    async saveSnippet(snippetModel: EditSnippetModel) {
+      await this.updateSnippetQueryHandler
+        .HandleAsync(new UpdateSnippetQuery(
+          snippetModel.id,
+          snippetModel.content,
+          snippetModel.description
+        ));
+      await this.updateSnippetItems();
+      this.canEditSnippet = false;
     }
 
-    addSnippet(snippetModel: EditSnippetModel) {
-      this.snippetService.addSnippet(new AddServiceSnippetModel(
-        snippetModel.content,
-        snippetModel.description,
-      ))
-        .then(() => {
-          this.canEditSnippet = false;
-        });
+    async addSnippet(snippetModel: EditSnippetModel) {
+      await this.createSnippetQueryHandler
+        .HandleAsync(new CreateSnippetQuery(
+          snippetModel.content,
+          snippetModel.description
+        ))
+      await this.updateSnippetItems();
+
+      this.canEditSnippet = false;
     }
   }
 </script>
