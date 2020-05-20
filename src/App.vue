@@ -25,7 +25,7 @@
             <div v-if="canPreviewSnippet">
               <h2>Preview:</h2>
               <PreviewSnippetComponent
-                v-bind:content-html="previewSnippetModelContentHtml"/>
+                v-bind:preview-snippet-model="currentViewableSnippetModel"/>
             </div>
             <div v-if="canAddSnippet"
                  class="d-flex flex-column h-100">
@@ -69,6 +69,7 @@
   import { Utils } from '@/utils/Utils';
   import PreviewSnippetComponent
     from '@/components/PreviewSnippetComponent/PreviewSnippetComponent.vue';
+  import { PreviewSnippetModel } from '@/components/PreviewSnippetComponent/models/PreviewSnippetModel';
 
   @Component({
     components: {
@@ -101,7 +102,7 @@
     currentEditableSnippetModel: EditSnippetModel | null = null;
     emptySnippetModel: EditSnippetModel = new EditSnippetModel(Utils.emptyString, Utils.emptyString, Utils.emptyString);
 
-    currentViewableSnippetModel: SnippetListItem | null = null;
+    currentViewableSnippetModel: PreviewSnippetModel | null = null;
 
     get editableSnippetId(): string | undefined {
       return this.currentEditableSnippetModel?.id;
@@ -113,10 +114,6 @@
 
     get canPreviewSnippet(): boolean {
       return this.currentViewableSnippetModel != null;
-    }
-
-    get previewSnippetModelContentHtml(): string | undefined {
-      return this.currentViewableSnippetModel?.content;
     }
 
     get canEditSnippet(): boolean {
@@ -190,12 +187,15 @@
       this.cancelEditSnippet();
     }
 
-    previewSnippet(id: string) {
-      const snippetItem = this.snippetItemList.find(x => x.id === id);
-      if (snippetItem !== undefined) {
-        this.cancelAllActions();
-        this.currentViewableSnippetModel = snippetItem;
-      }
+    async previewSnippet(id: string) {
+      const snippetItemModel = await this.snippetItemQueryHandler
+        .HandleAsync(new SnippetItemQuery(id));
+
+      this.cancelAllActions();
+      this.currentViewableSnippetModel = new PreviewSnippetModel(
+        snippetItemModel.id,
+        snippetItemModel.content,
+      );
     }
   }
 </script>
