@@ -20,6 +20,7 @@
         <div class="col-md">
           <SnippetListComponent
             v-bind:snippetModelList="snippetItemList"
+            v-bind:editable-snippet-id="currentEditableSnippetModel.id"
             v-on:on-delete="deleteSnippet($event)"
             v-on:on-edit="editSnippet($event)"/>
         </div>
@@ -53,7 +54,6 @@
   import SnippetListComponent from '@/components/SnippetListComponent/SnippetListComponent.vue';
   import EditSnippetComponent from '@/components/EditSnippetComponent/EditSnippetComponent.vue';
   import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
-  import { Utils } from '@/utils/Utils';
   import { SnippetListItem } from '@/components/SnippetListComponent/models/SnippetListItem';
   import { DateTimeFormats } from '@/utils/DateTimeFormats';
   import moment from 'moment';
@@ -73,6 +73,7 @@
   import { ISnippetItemQueryHandler, SnippetItemQuery } from '@/core/bl/contracts/SnippetItemQuery';
   import { SnippetItemModel } from '@/core/bl/contracts/models/SnippetItemModel';
   import { ServiceProviders } from '@/ServiceProviders';
+  import { EmptyEditSnippetModelFactory } from '@/components/EditSnippetComponent/models/EmptyEditSnippetModelFactory';
 
   @Component({
     components: {
@@ -101,17 +102,11 @@
       ));
     }
 
-    currentEditableSnippetModel: EditSnippetModel = new EditSnippetModel(
-      Utils.emptyString,
-      Utils.emptyString,
-      Utils.emptyString);
+    currentEditableSnippetModel: EditSnippetModel = EmptyEditSnippetModelFactory.build();
 
     canEditSnippet = false;
 
-    emptySnippetModel: EditSnippetModel = new EditSnippetModel(
-      Utils.emptyString,
-      Utils.emptyString,
-      Utils.emptyString);
+    emptySnippetModel: EditSnippetModel = EmptyEditSnippetModelFactory.build();
 
     async mounted() {
       await this.updateSnippetItems();
@@ -143,6 +138,7 @@
     }
 
     cancelEditSnippet() {
+      this.currentEditableSnippetModel = EmptyEditSnippetModelFactory.build();
       this.canEditSnippet = false;
     }
 

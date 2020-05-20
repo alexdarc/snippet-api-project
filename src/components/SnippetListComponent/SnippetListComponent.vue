@@ -18,6 +18,7 @@
              aria-label="Control buttons">
           <button
             v-on:click="onEdit(snippetModel.id)"
+            v-bind:class="{ active: editableSnippetId === snippetModel.id }"
             type="button"
             class="btn btn-outline-primary">
             Edit
@@ -44,6 +45,10 @@
       type: Array as () => SnippetListItem[],
       required: true,
     }) snippetModelList!: SnippetListItem[];
+    @Prop({
+      type: String,
+      required: false,
+    }) editableSnippetId!: string;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
     @Emit() onEdit(id: string) {
