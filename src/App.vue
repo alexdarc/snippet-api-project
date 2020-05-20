@@ -1,19 +1,43 @@
 <template>
   <div id="app">
-    <SnippetListComponent v-bind:snippetModelList="snippetItemList"
-                          v-on:on-delete="deleteSnippet($event)"
-                          v-on:on-edit="editSnippet($event)"/>
-
-    <div v-if="canEditSnippet">
-      <h2>Edit snippet:</h2>
-      <EditSnippetComponent v-bind:snippet-model="currentEditableSnippetModel"
-                            v-on:on-save="saveSnippet($event)"/>
-      <button v-on:click="cancelEditSnippet()">Cancel</button>
-    </div>
-    <div v-if="!canEditSnippet">
-      <h2>Add snippet:</h2>
-      <EditSnippetComponent v-bind:snippet-model="emptySnippetModel"
-                            v-on:on-save="addSnippet($event)"/>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md">
+          <SnippetListComponent
+            v-bind:snippetModelList="snippetItemList"
+            v-bind:editable-snippet-id="editableSnippetId"
+            v-bind:viewable-snippet-id="viewableSnippetId"
+            v-on:on-delete="deleteSnippet($event)"
+            v-on:on-edit="editSnippet($event)"
+            v-on:on-preview="previewSnippet($event)"/>
+        </div>
+        <div class="col-md">
+          <div class="editor-window sticky-top h-100">
+            <div v-if="canEditSnippet"
+                 class="d-flex flex-column h-100">
+              <h2>Edit snippet:</h2>
+              <EditSnippetComponent
+                v-bind:snippet-model="currentEditableSnippetModel"
+                v-on:on-save="saveSnippet($event)"
+                v-bind:show-cancel="true"
+                v-on:on-cancel="cancelEditSnippet()"/>
+            </div>
+            <div v-if="canPreviewSnippet">
+              <h2>Preview:</h2>
+              <PreviewSnippetComponent
+                v-bind:preview-snippet-model="currentViewableSnippetModel"/>
+            </div>
+            <div v-if="canAddSnippet"
+                 class="d-flex flex-column h-100">
+              <h2>Add snippet:</h2>
+              <EditSnippetComponent
+                v-bind:snippet-model="emptySnippetModel"
+                v-on:on-save="addSnippet($event)"
+                v-bind:show-cancel="false"/>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -23,7 +47,6 @@
   import SnippetListComponent from '@/components/SnippetListComponent/SnippetListComponent.vue';
   import EditSnippetComponent from '@/components/EditSnippetComponent/EditSnippetComponent.vue';
   import { EditSnippetModel } from '@/components/EditSnippetComponent/models/EditSnippetModel';
-  import { Utils } from '@/utils/Utils';
   import { SnippetListItem } from '@/components/SnippetListComponent/models/SnippetListItem';
   import { DateTimeFormats } from '@/utils/DateTimeFormats';
   import moment from 'moment';
@@ -43,9 +66,14 @@
   import { ISnippetItemQueryHandler, SnippetItemQuery } from '@/core/bl/contracts/SnippetItemQuery';
   import { SnippetItemModel } from '@/core/bl/contracts/models/SnippetItemModel';
   import { ServiceProviders } from '@/ServiceProviders';
+  import { Utils } from '@/utils/Utils';
+  import PreviewSnippetComponent
+    from '@/components/PreviewSnippetComponent/PreviewSnippetComponent.vue';
+  import { PreviewSnippetModel } from '@/components/PreviewSnippetComponent/models/PreviewSnippetModel';
 
   @Component({
     components: {
+      PreviewSnippetComponent,
       EditSnippetComponent,
       SnippetListComponent,
     },
@@ -71,17 +99,30 @@
       ));
     }
 
-    currentEditableSnippetModel: EditSnippetModel = new EditSnippetModel(
-      Utils.emptyString,
-      Utils.emptyString,
-      Utils.emptyString);
+    currentEditableSnippetModel: EditSnippetModel | null = null;
+    emptySnippetModel: EditSnippetModel = new EditSnippetModel(Utils.emptyString, Utils.emptyString, Utils.emptyString);
 
-    canEditSnippet = false;
+    currentViewableSnippetModel: PreviewSnippetModel | null = null;
 
-    emptySnippetModel: EditSnippetModel = new EditSnippetModel(
-      Utils.emptyString,
-      Utils.emptyString,
-      Utils.emptyString);
+    get editableSnippetId(): string | undefined {
+      return this.currentEditableSnippetModel?.id;
+    }
+
+    get viewableSnippetId(): string | undefined {
+      return this.currentViewableSnippetModel?.id;
+    }
+
+    get canPreviewSnippet(): boolean {
+      return this.currentViewableSnippetModel != null;
+    }
+
+    get canEditSnippet(): boolean {
+      return this.currentEditableSnippetModel != null;
+    }
+
+    get canAddSnippet(): boolean {
+      return !this.canEditSnippet && !this.canPreviewSnippet;
+    }
 
     async mounted() {
       await this.updateSnippetItems();
@@ -104,16 +145,25 @@
       const snippetItemModel = await this.snippetItemQueryHandler
         .HandleAsync(new SnippetItemQuery(id));
 
+      this.cancelAllActions();
       this.currentEditableSnippetModel = new EditSnippetModel(
         snippetItemModel.id,
         snippetItemModel.content,
         snippetItemModel.description,
       );
-      this.canEditSnippet = true;
+    }
+
+    cancelPreviewSnippet() {
+      this.currentViewableSnippetModel = null;
     }
 
     cancelEditSnippet() {
-      this.canEditSnippet = false;
+      this.currentEditableSnippetModel = null;
+    }
+
+    cancelAllActions() {
+      this.cancelPreviewSnippet();
+      this.cancelEditSnippet();
     }
 
     async saveSnippet(snippetModel: EditSnippetModel) {
@@ -124,7 +174,7 @@
           snippetModel.description
         ));
       await this.updateSnippetItems();
-      this.canEditSnippet = false;
+      this.cancelEditSnippet();
     }
 
     async addSnippet(snippetModel: EditSnippetModel) {
@@ -134,19 +184,29 @@
           snippetModel.description
         ))
       await this.updateSnippetItems();
+      this.cancelEditSnippet();
+    }
 
-      this.canEditSnippet = false;
+    async previewSnippet(id: string) {
+      const snippetItemModel = await this.snippetItemQueryHandler
+        .HandleAsync(new SnippetItemQuery(id));
+
+      this.cancelAllActions();
+      this.currentViewableSnippetModel = new PreviewSnippetModel(
+        snippetItemModel.id,
+        snippetItemModel.content,
+      );
     }
   }
 </script>
 
 <style>
   #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-    margin-top: 60px;
+    padding: 20px;
+  }
+
+  .editor-window {
+    max-height: calc(100vh - 20px);
+    min-height: 500px;
   }
 </style>
