@@ -1,20 +1,5 @@
 <template>
   <div id="app">
-    <!--    <SnippetListComponent v-bind:snippetModelList="snippetItemList"-->
-    <!--                          v-on:on-delete="deleteSnippet($event)"-->
-    <!--                          v-on:on-edit="editSnippet($event)"/>-->
-
-    <!--    <div v-if="canEditSnippet">-->
-    <!--      <h2>Edit snippet:</h2>-->
-    <!--      <EditSnippetComponent v-bind:snippet-model="currentEditableSnippetModel"-->
-    <!--                            v-on:on-save="saveSnippet($event)"/>-->
-    <!--      <button v-on:click="cancelEditSnippet()">Cancel</button>-->
-    <!--    </div>-->
-    <!--    <div v-if="!canEditSnippet">-->
-    <!--      <h2>Add snippet:</h2>-->
-    <!--      <EditSnippetComponent v-bind:snippet-model="emptySnippetModel"-->
-    <!--                            v-on:on-save="addSnippet($event)"/>-->
-    <!--    </div>-->
     <div class="container-fluid">
       <div class="row">
         <div class="col-md">
