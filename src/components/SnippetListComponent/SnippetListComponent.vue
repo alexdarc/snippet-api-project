@@ -17,6 +17,13 @@
              role="group"
              aria-label="Control buttons">
           <button
+            v-on:click="onPreview(snippetModel.id)"
+            v-bind:class="{ active: viewableSnippetId === snippetModel.id }"
+            type="button"
+            class="btn btn-outline-primary">
+            Preview
+          </button>
+          <button
             v-on:click="onEdit(snippetModel.id)"
             v-bind:class="{ active: editableSnippetId === snippetModel.id }"
             type="button"
@@ -48,6 +55,10 @@
     @Prop({
       type: String,
       required: false,
+    }) viewableSnippetId!: string;
+    @Prop({
+      type: String,
+      required: false,
     }) editableSnippetId!: string;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
@@ -56,6 +67,10 @@
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
     @Emit() onDelete(id: string) {
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+    @Emit() onPreview(id: string) {
     }
 
     confirmDelete(id: string) {

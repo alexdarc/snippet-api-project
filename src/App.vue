@@ -20,9 +20,11 @@
         <div class="col-md">
           <SnippetListComponent
             v-bind:snippetModelList="snippetItemList"
-            v-bind:editable-snippet-id="currentEditableSnippetModel.id"
+            v-bind:editable-snippet-id="editableSnippetId"
+            v-bind:viewable-snippet-id="viewableSnippetId"
             v-on:on-delete="deleteSnippet($event)"
-            v-on:on-edit="editSnippet($event)"/>
+            v-on:on-edit="editSnippet($event)"
+            v-on:on-preview="previewSnippet($event)"/>
         </div>
         <div class="col-md">
           <div class="editor-window sticky-top h-100">
@@ -35,12 +37,18 @@
                 v-bind:show-cancel="true"
                 v-on:on-cancel="cancelEditSnippet()"/>
             </div>
-            <div v-if="!canEditSnippet"
+            <div v-if="canPreviewSnippet">
+              <h2>Preview:</h2>
+              <PreviewSnippetComponent
+                v-bind:content-html="previewSnippetModelContentHtml"/>
+            </div>
+            <div v-if="canAddSnippet"
                  class="d-flex flex-column h-100">
               <h2>Add snippet:</h2>
               <EditSnippetComponent
                 v-bind:snippet-model="emptySnippetModel"
-                v-on:on-save="addSnippet($event)"/>
+                v-on:on-save="addSnippet($event)"
+                v-bind:show-cancel="false"/>
             </div>
           </div>
         </div>
@@ -73,10 +81,13 @@
   import { ISnippetItemQueryHandler, SnippetItemQuery } from '@/core/bl/contracts/SnippetItemQuery';
   import { SnippetItemModel } from '@/core/bl/contracts/models/SnippetItemModel';
   import { ServiceProviders } from '@/ServiceProviders';
-  import { EmptyEditSnippetModelFactory } from '@/components/EditSnippetComponent/models/EmptyEditSnippetModelFactory';
+  import { Utils } from '@/utils/Utils';
+  import PreviewSnippetComponent
+    from '@/components/PreviewSnippetComponent/PreviewSnippetComponent.vue';
 
   @Component({
     components: {
+      PreviewSnippetComponent,
       EditSnippetComponent,
       SnippetListComponent,
     },
@@ -102,11 +113,34 @@
       ));
     }
 
-    currentEditableSnippetModel: EditSnippetModel = EmptyEditSnippetModelFactory.build();
+    currentEditableSnippetModel: EditSnippetModel | null = null;
+    emptySnippetModel: EditSnippetModel = new EditSnippetModel(Utils.emptyString, Utils.emptyString, Utils.emptyString);
 
-    canEditSnippet = false;
+    currentViewableSnippetModel: SnippetListItem | null = null;
 
-    emptySnippetModel: EditSnippetModel = EmptyEditSnippetModelFactory.build();
+    get editableSnippetId(): string | undefined {
+      return this.currentEditableSnippetModel?.id;
+    }
+
+    get viewableSnippetId(): string | undefined {
+      return this.currentViewableSnippetModel?.id;
+    }
+
+    get canPreviewSnippet(): boolean {
+      return this.currentViewableSnippetModel != null;
+    }
+
+    get previewSnippetModelContentHtml(): string | undefined {
+      return this.currentViewableSnippetModel?.content;
+    }
+
+    get canEditSnippet(): boolean {
+      return this.currentEditableSnippetModel != null;
+    }
+
+    get canAddSnippet(): boolean {
+      return !this.canEditSnippet && !this.canPreviewSnippet;
+    }
 
     async mounted() {
       await this.updateSnippetItems();
@@ -129,17 +163,25 @@
       const snippetItemModel = await this.snippetItemQueryHandler
         .HandleAsync(new SnippetItemQuery(id));
 
+      this.cancelAllActions();
       this.currentEditableSnippetModel = new EditSnippetModel(
         snippetItemModel.id,
         snippetItemModel.content,
         snippetItemModel.description,
       );
-      this.canEditSnippet = true;
+    }
+
+    cancelPreviewSnippet() {
+      this.currentViewableSnippetModel = null;
     }
 
     cancelEditSnippet() {
-      this.currentEditableSnippetModel = EmptyEditSnippetModelFactory.build();
-      this.canEditSnippet = false;
+      this.currentEditableSnippetModel = null;
+    }
+
+    cancelAllActions() {
+      this.cancelPreviewSnippet();
+      this.cancelEditSnippet();
     }
 
     async saveSnippet(snippetModel: EditSnippetModel) {
@@ -161,6 +203,14 @@
         ))
       await this.updateSnippetItems();
       this.cancelEditSnippet();
+    }
+
+    previewSnippet(id: string) {
+      const snippetItem = this.snippetItemList.find(x => x.id === id);
+      if (snippetItem !== undefined) {
+        this.cancelAllActions();
+        this.currentViewableSnippetModel = snippetItem;
+      }
     }
   }
 </script>
