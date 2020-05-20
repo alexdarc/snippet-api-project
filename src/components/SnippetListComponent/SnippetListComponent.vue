@@ -10,7 +10,7 @@
           <time title="Created date">{{snippetModel.createdDate}}</time>
         </small>
       </div>
-      <p class="mb-1">{{snippetModel.content}}</p>
+      <p class="mb-1 list-content">{{snippetModel.content}}</p>
       <div class="d-flex w-100 justify-content-between align-items-end">
         <small class="text-muted">{{snippetModel.id}}</small>
         <div class="btn-group btn-group-sm"
@@ -82,5 +82,9 @@
 </script>
 
 <style scoped>
-
+  .list-content {
+    max-height: 10.5em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>

@@ -23,7 +23,12 @@
                 v-on:on-cancel="cancelEditSnippet()"/>
             </div>
             <div v-if="canPreviewSnippet">
-              <h2>Preview:</h2>
+              <h2>
+                Preview:
+                <button
+                  v-on:click="cancelPreviewSnippet()"
+                  class="btn btn-sm">Cancel</button>
+              </h2>
               <PreviewSnippetComponent
                 v-bind:preview-snippet-model="currentViewableSnippetModel"/>
             </div>
@@ -87,14 +92,16 @@
 
     private readonly limit = 50;
     private readonly offset = 0;
+    private readonly maxContentSize = 255;
+    private readonly maxDescriptionSize = 255;
 
     snippetItemModels: SnippetItemModel[] = [];
 
     get snippetItemList(): SnippetListItem[] {
       return this.snippetItemModels.map(snippetItemModel => new SnippetListItem(
         snippetItemModel.id,
-        snippetItemModel.content,
-        snippetItemModel.description,
+        snippetItemModel.content.slice(0, this.maxContentSize),
+        snippetItemModel.description.slice(0, this.maxDescriptionSize),
         moment(snippetItemModel.createdDate).format(DateTimeFormats.longDate),
       ));
     }
@@ -208,5 +215,6 @@
   .editor-window {
     max-height: calc(100vh - 20px);
     min-height: 500px;
+    overflow: auto;
   }
 </style>

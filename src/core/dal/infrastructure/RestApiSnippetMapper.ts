@@ -33,7 +33,12 @@ export class RestApiSnippetMapper implements ISnippetMapper {
   }
 
   list(limit: number, offset: number): Promise<SnippetModel[]> {
-    return this.http.get('snippets')
+    return this.http.get('snippets', {
+      params: {
+        offset,
+        limit,
+      },
+    })
       .then(response => response.data);
   }
 

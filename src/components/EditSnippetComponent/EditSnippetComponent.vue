@@ -2,7 +2,7 @@
   <form v-on:submit.prevent="submitForm"
         class="d-flex flex-column flex-fill">
     <div class="form-group">
-      <label for="description">Description</label>
+      <label for="description">Description:</label>
       <input
         v-model="snippetModel.description"
         type="text"
@@ -11,7 +11,8 @@
         placeholder="Something about snippet">
     </div>
     <div class="form-group d-flex flex-column flex-fill">
-      <label for="content">Content</label>
+      <label for="content">Content:</label>
+      <small class="text-muted">HTML code</small>
       <textarea
         v-model="snippetModel.content"
         class="form-control flex-fill"
